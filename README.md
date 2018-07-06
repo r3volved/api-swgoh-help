@@ -42,16 +42,4 @@ Request available support data:
 
 ## Data criteria
 
-events
-units
-arena
-gear
-mod-sets
-mod-stats
-skills
-skill-types
-tb
-zetas
-zeta-abilities
-zeta-recommendations
-battles
+events, units, arena, gear, mod-sets, mod-stats, skills, skill-types, tb, zetas, zeta-abilities, zeta-recommendations, battles

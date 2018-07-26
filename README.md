@@ -1,45 +1,39 @@
 # api-swgoh-help
-JavaScript client wrapper for the API at https://api.swgoh.help
+PHP client wrapper for the API at https://api.swgoh.help
 
 
 ## Usage
 
-Install via npm:
-
-	npm install api-swgoh-help
-	
 Require and initialize connection:
 
-	const ApiSwgohHelp = require('api-swgoh-help');
-	const swapi = new ApiSwgohHelp({
-		"username":"YOUR_USERNAME",
-		"password":"YOUR_PASSWORD",
-		"client_id":"YOUR_ID",
-		"client_secret":"YOUR_SECRET"
-	});
+	require_once 'api-swgoh-help.php';
+    
+    $swgoh = new ApiSwgohHelp(
+        array("YOUR_USERNAME","YOUR_PASSWORD")
+    );	
 
 Request player profile by allycode:
 
-	let allycode = 123456789;
-	const player = await swapi.fetchPlayer( allycode );
-	console.log( player );
+	$allycode = 123456789;
+	$player = $swgoh->fetchPlayer( $allycode );
+	echo '<pre>'.json_encode($player).'</pre>';
 	
 Request guild roster by allycode:
 
-	let allycode = 123456789;
-	const guild = await swapi.fetchGuild( allycode );
-	console.log( guild );
+	$allycode = 123456789;
+	$guild = $swgoh->fetchGuild( $allycode );
+	echo '<pre>'.json_encode($guild).'</pre>';
 
 Request available support data:
 
-	let criteria = 'stats';
-	const data = await swapi.fetchData( criteria );
-	console.log( data );
+	$criteria = 'stats';
+	$stats = $swgoh->fetchData( $criteria );
+	echo '<pre>'.json_encode($stats).'</pre>';
 	
-	criteria = 'events';
-	data = await swapi.fetchData( criteria );
-	console.log( data );
-
+	$criteria = 'events';
+	$events = $swgoh->fetchData( $criteria );
+	echo '<pre>'.json_encode($events).'</pre>';
+	
 ## Data criteria
 
 * events
@@ -60,4 +54,5 @@ Request available support data:
 # Available Language Clients
 
 * JavaScript: https://github.com/r3volved/api-swgoh-help
+* PHP: https://github.com/r3volved/api-swgoh-help
 * Java: https://github.com/j0rdanit0/api-swgoh-help

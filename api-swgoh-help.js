@@ -68,25 +68,28 @@ module.exports = class SwgohHelp {
     	
     }
     
-    async fetchData( criteria ) {
+    async fetchData( criteria, details, lang ) {
     	try {
-    		return await this.fetchAPI( this.data, criteria );
+    		criteria += details ? "/"+details : "";
+    		return await this.fetchAPI( this.data, criteria, lang );
     	} catch(e) {
     		throw e;
     	}
     }
     
-    async fetchPlayer( allycode ) {
+    async fetchPlayer( allycode, details, lang ) {
     	try {
-    		return await this.fetchAPI( this.player, allycode );
+    		allycode += details ? "/"+details : "";
+    		return await this.fetchAPI( this.player, allycode, lang );
     	} catch(e) {
     		throw e;
     	}
     }
     
-    async fetchGuild( allycode ) {
+    async fetchGuild( allycode, details, lang ) {
     	try {
-    		return await this.fetchAPI( this.guild, allycode );
+    		allycode += details ? "/"+details : "";
+    		return await this.fetchAPI( this.guild, allycode, lang );
     	} catch(e) {
     		throw e;
     	}

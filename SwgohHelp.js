@@ -10,21 +10,24 @@ module.exports = class SwgohHelp {
     	    	    	
     	this.token = null;
     	
-    	this.url = (settings.protocol || 'https')+"://"+(settings.host || "api.swgoh.help")+(settings.port || '');
-    	this.signin = this.url+'/auth/signin';
-        this.data   = this.url+'/swgoh/data/';
-        this.player = this.url+'/swgoh/player/';
-        this.guild  = this.url+'/swgoh/guild/';
+    	this.urlBase = (settings.protocol || 'https')+"://"+(settings.host || "api.swgoh.help")+(settings.port || '');
+    	this.signin = '/auth/signin';
+        this.data   = '/swgoh/data/';
+        this.player = '/swgoh/player/';
+        this.guild  = '/swgoh/guild/';
         
         this.fetch = require('node-fetch');		
         
     }
     
-    async login() {
+    async login( url, body ) {
     	
     	try {
 			
-    		let token = await this.fetch(this.signin, { 
+    		url = url ? this.urlBase+url : this.urlBase+this.signin;
+    		body = body || this.user;
+    		
+    		let token = await this.fetch(this.urlBase+this.signin, { 
     		    method: 'POST',
     		    body:this.user,
     		    headers: { 
@@ -50,7 +53,7 @@ module.exports = class SwgohHelp {
     		
     		if( !this.token ) { await this.login(); }
     		
-    		let fetchUrl = lang ? url+(criteria || '')+"/"+lang : url+(criteria || '');
+    		let fetchUrl = lang ? this.urlBase+url+(criteria || '')+"/"+lang : this.urlBase+url+(criteria || '');
     			
     		const response = await this.fetch(fetchUrl, { 
     		    method: 'POST',

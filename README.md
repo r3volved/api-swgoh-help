@@ -1,5 +1,5 @@
 # api-swgoh-help
-Connection wrapper for api.swgoh.help
+JavaScript client wrapper for the API at https://api.swgoh.help
 
 
 ## Usage
@@ -8,7 +8,7 @@ Install via npm:
 
 	npm install api-swgoh-help
 	
-In code, require and initialize connection:
+Require and initialize connection:
 
 	const ApiSwgohHelp = require('api-swgoh-help');
 	const swapi = new ApiSwgohHelp({
@@ -42,16 +42,22 @@ Request available support data:
 
 ## Data criteria
 
-events
-units
-arena
-gear
-mod-sets
-mod-stats
-skills
-skill-types
-tb
-zetas
-zeta-abilities
-zeta-recommendations
-battles
+* events
+* units
+* arena
+* gear
+* mod-sets
+* mod-stats
+* skills
+* skill-types
+* tb
+* zetas
+* zeta-abilities
+* zeta-recommendations
+* battles
+
+
+# Available Language Clients
+
+* JavaScript: https://github.com/r3volved/api-swgoh-help
+* Java: https://github.com/j0rdanit0/api-swgoh-help

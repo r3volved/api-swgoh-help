@@ -61,3 +61,5 @@ typings/
 .next
 
 /api.js
+/test.js
+/data/**/*.*

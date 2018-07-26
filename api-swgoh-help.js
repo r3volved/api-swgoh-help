@@ -5,8 +5,8 @@ module.exports = class SwgohHelp {
     	this.user = "username="+settings.username;        
     	this.user += "&password="+settings.password;
     	this.user += "&grant_type=password";
-    	this.user += "&client_id="+settings.client_id;
-    	this.user += "&client_secret="+settings.client_secret;
+    	this.user += "&client_id="+(settings.client_id || '123');
+    	this.user += "&client_secret="+(settings.client_secret || 'abc');
     	    	    	
     	this.token = null;
     	
@@ -29,7 +29,7 @@ module.exports = class SwgohHelp {
     		
     		let token = await this.fetch(this.urlBase+this.signin, { 
     		    method: 'POST',
-    		    body:this.user,
+    		    body:body,
     		    headers: { 
     		    	'Content-Type': 'application/x-www-form-urlencoded',
     		    	'Content-Length': new Buffer(JSON.stringify(this.user)).length

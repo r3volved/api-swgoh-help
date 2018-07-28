@@ -29,11 +29,11 @@ module.exports = class SwgohHelp {
     		
     		let token = await this.fetch(this.urlBase+this.signin, { 
     		    method: 'POST',
-    		    body:body,
     		    headers: { 
     		    	'Content-Type': 'application/x-www-form-urlencoded',
     		    	'Content-Length': new Buffer(JSON.stringify(this.user)).length
-    		    }
+    		    },
+    		    body:body    		    
     		});
 			
     		if( token.status !== 200 ) { throw new Error('! Cannot login with these credentials'); }
@@ -47,20 +47,30 @@ module.exports = class SwgohHelp {
     	
     }
     
-    async fetchAPI( url, criteria, lang ) {
+    async fetchAPI( url, criteria, lang, body ) {
     	
     	try {
     		
     		if( !this.token ) { await this.login(); }
     		
     		let fetchUrl = lang ? this.urlBase+url+(criteria || '')+"/"+lang : this.urlBase+url+(criteria || '');
-    			
+    		body = body || '';
+    		
     		const response = await this.fetch(fetchUrl, { 
     		    method: 'POST',
-    		    headers: this.token
+    		    headers: this.token,
+    		    body: body,
+    		    timeout:1000*60*10
     		});
     		
-    		return await response.json();
+    		let result = null;
+    		try {
+    			result = await response.json();
+    		} catch(e) {
+    			result = { response:response };
+    		}
+    			
+    		return result;
     		
     	} catch(e) {
     		throw e;

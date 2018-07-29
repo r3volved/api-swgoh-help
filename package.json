@@ -1,6 +1,6 @@
 {
   "name": "api-swgoh-help",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Connection wrapper for api.swgoh.help",
   "main": "api-swgoh-help.js",
   "repository": {
@@ -15,6 +15,7 @@
   "author": "shittybill",
   "license": "MIT",
   "dependencies": {
-    "node-fetch": "^2.1.2"
+    "node-fetch": "^2.1.2",
+    "performance-now": "^2.1.0"
   }
 }

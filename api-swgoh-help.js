@@ -1,3 +1,5 @@
+const now = require('performance-now');
+
 module.exports = class SwgohHelp {
 	
     constructor(settings) {
@@ -10,7 +12,10 @@ module.exports = class SwgohHelp {
     	    	    	
     	this.token = null;
     	
-    	this.urlBase = (settings.protocol || 'https')+"://"+(settings.host || "api.swgoh.help")+(settings.port || '');
+    	this.urlBase = (settings.protocol || 'https')+"://";
+    	this.urlBase += settings.host || "api.swgoh.help";
+    	this.urlBase += settings.port ? ":"+settings.port : '';
+    	
     	this.signin = '/auth/signin';
         this.data   = '/swgoh/data/';
         this.player = '/swgoh/player/';
@@ -18,20 +23,37 @@ module.exports = class SwgohHelp {
         
         this.fetch = require('node-fetch');		
         
+        this.verbose = settings.verbose || false;
+        this.debug   = settings.debug || false;
+        
     }
     
     async login( url, body ) {
-    	
+ 
+		const t0 = now();
+
     	try {
 			
     		url = url ? this.urlBase+url : this.urlBase+this.signin;
     		body = body || this.user;
     		
+    		if( this.debug || this.verbose ) { 
+    			console.log('Acquiring token...'); 
+    			if( this.debug ) { 
+    				console.log('From: '+url);
+    				console.log('Body: '+body); 
+    			}
+        	}
+    		
+    		if( this.verbose ) {
+	    		console.info('Acquiring token...');
+    		}
+    		
     		let token = await this.fetch(this.urlBase+this.signin, { 
     		    method: 'POST',
     		    headers: { 
     		    	'Content-Type': 'application/x-www-form-urlencoded',
-    		    	'Content-Length': new Buffer(JSON.stringify(this.user)).length
+    		    	'Content-Length': new Buffer(JSON.stringify(body)).length
     		    },
     		    body:body    		    
     		});
@@ -39,9 +61,23 @@ module.exports = class SwgohHelp {
     		if( token.status !== 200 ) { throw new Error('! Cannot login with these credentials'); }
 
     		token = await token.json();
-    		this.token = { 'Authorization':"Bearer "+token.access_token };
+    		
+    		this.token = { 
+		    	'Content-Type': 'application/x-www-form-urlencoded',
+				'Authorization':"Bearer "+token.access_token 
+			};
 			
+    		if( this.debug ) {
+    			console.log('Time: '+((now()-t0)/1000).toFixed(3)+' seconds');
+        		console.log('Token: '+JSON.stringify(this.token,'',' '));
+    	    	console.log('='.repeat(60));
+    		}
+    		
     	} catch(e) {
+    		if( this.debug ) {
+    			console.log('Time: '+((now()-t0)/1000).toFixed(3)+' seconds');
+    			console.log('Login error');
+    		}
     		throw e;
     	}
     	
@@ -49,6 +85,9 @@ module.exports = class SwgohHelp {
     
     async fetchAPI( url, criteria, lang, body ) {
     	
+		const t0 = now();
+		let response = null;
+		
     	try {
     		
     		if( !this.token ) { await this.login(); }
@@ -56,23 +95,42 @@ module.exports = class SwgohHelp {
     		let fetchUrl = lang ? this.urlBase+url+(criteria || '')+"/"+lang : this.urlBase+url+(criteria || '');
     		body = body || '';
     		
-    		const response = await this.fetch(fetchUrl, { 
+    		if( this.debug || this.verbose ) { 
+    			console.log('Fetching api...');
+	    		if( this.debug ) { 
+		    		console.log('From: '+fetchUrl);
+		    		console.log('Body: '+body);
+    			}
+        	}
+
+    		response = await this.fetch(fetchUrl, { 
     		    method: 'POST',
     		    headers: this.token,
-    		    body: body,
-    		    timeout:1000*60*10
+    		    body: body
     		});
     		
+    		if( response.status !== 200 ) { throw new Error('! Cannot fetch '+fetchUrl); }
+
     		let result = null;
     		try {
     			result = await response.json();
     		} catch(e) {
     			result = { response:response };
     		}
-    			
+    		
+    		if( this.debug ) {
+    			console.log('Time: '+((now()-t0)/1000).toFixed(3)+' seconds');
+    	    	console.log('='.repeat(60));
+    		}
+
     		return result;
     		
     	} catch(e) {
+    		if( this.debug ) {
+    			console.log('Time: '+((now()-t0)/1000).toFixed(3)+' seconds');
+    			console.log('Fetch error');
+    			console.log(response);
+    		}
     		throw e;
     	}
     	

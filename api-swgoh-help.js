@@ -38,16 +38,12 @@ module.exports = class SwgohHelp {
     		body = body || this.user;
     		
     		if( this.debug || this.verbose ) { 
-    			console.log('Acquiring token...'); 
+    			console.info('Acquiring token...'); 
     			if( this.debug ) { 
     				console.log('From: '+url);
     				console.log('Body: '+body); 
     			}
         	}
-    		
-    		if( this.verbose ) {
-	    		console.info('Acquiring token...');
-    		}
     		
     		let token = await this.fetch(this.urlBase+this.signin, { 
     		    method: 'POST',
@@ -68,16 +64,12 @@ module.exports = class SwgohHelp {
 			};
 			
     		if( this.debug ) {
-    			console.log('Time: '+((now()-t0)/1000).toFixed(3)+' seconds');
+    			console.info('Acquired! : '+((now()-t0)/1000).toFixed(3)+' seconds');
         		console.log('Token: '+JSON.stringify(this.token,'',' '));
-    	    	console.log('='.repeat(60));
+    	    	console.info('='.repeat(60));
     		}
     		
     	} catch(e) {
-    		if( this.debug ) {
-    			console.log('Time: '+((now()-t0)/1000).toFixed(3)+' seconds');
-    			console.log('Login error');
-    		}
     		throw e;
     	}
     	
@@ -92,11 +84,11 @@ module.exports = class SwgohHelp {
     		
     		if( !this.token ) { await this.login(); }
     		
-    		let fetchUrl = lang ? this.urlBase+url+(criteria || '')+"/"+lang : this.urlBase+url+(criteria || '');
+    		let fetchUrl = lang ? this.urlBase+url+(criteria || '')+"?lang="+lang : this.urlBase+url+(criteria || '');
     		body = body || '';
     		
     		if( this.debug || this.verbose ) { 
-    			console.log('Fetching api...');
+    			console.info('Fetching api...');
 	    		if( this.debug ) { 
 		    		console.log('From: '+fetchUrl);
 		    		console.log('Body: '+body);
@@ -108,29 +100,21 @@ module.exports = class SwgohHelp {
     		    headers: this.token,
     		    body: body
     		});
-    		
-    		if( response.status !== 200 ) { throw new Error('! Cannot fetch '+fetchUrl); }
 
-    		let result = null;
     		try {
-    			result = await response.json();
+    			response = await response.json();
     		} catch(e) {
-    			result = { response:response };
+    			response = { response:response };
     		}
     		
     		if( this.debug ) {
-    			console.log('Time: '+((now()-t0)/1000).toFixed(3)+' seconds');
-    	    	console.log('='.repeat(60));
+    			console.info('Fetched! : '+((now()-t0)/1000).toFixed(3)+' seconds');
+    	    	console.info('='.repeat(60));
     		}
 
-    		return result;
+    		return response;
     		
     	} catch(e) {
-    		if( this.debug ) {
-    			console.log('Time: '+((now()-t0)/1000).toFixed(3)+' seconds');
-    			console.log('Fetch error');
-    			console.log(response);
-    		}
     		throw e;
     	}
     	

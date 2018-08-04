@@ -30,7 +30,7 @@ module.exports = class SwgohHelp {
         
     }
     
-    async login( url, body ) {
+    async connect( url, body ) {
  
 		const t0 = now();
 
@@ -47,7 +47,7 @@ module.exports = class SwgohHelp {
     			}
         	}
     		
-    		let token = await this.fetch(this.urlBase+this.signin, { 
+    		let connection = await this.fetch(url, { 
     		    method: 'POST',
     		    headers: { 
     		    	'Content-Type': 'application/x-www-form-urlencoded',
@@ -56,13 +56,12 @@ module.exports = class SwgohHelp {
     		    body:body    		    
     		});
 			
-    		try {
-
-    			token = await token.json();
-        		
-    			this.token = { 
+    		connection = await connection.json();
+    		
+			if( connection.access_token ) {
+    			connection = { 
     		    	'Content-Type':'application/x-www-form-urlencoded',
-    				'Authorization':'Bearer '+token.access_token 
+    				'Authorization':'Bearer '+connection.access_token 
     			};
     			
         		if( this.debug ) {
@@ -70,11 +69,10 @@ module.exports = class SwgohHelp {
             		console.log('Token: '+JSON.stringify(this.token,'',' '));
         	    	console.info('='.repeat(60));
         		}
-
-    		} catch(e) {
-    			throw new Error('! Cannot login with these credentials\n'+token);
-    		}
-    		    		    		
+			}
+			
+			return connection;
+			
     	} catch(e) {
     		throw e;
     	}
@@ -88,7 +86,7 @@ module.exports = class SwgohHelp {
 		
     	try {
     		
-    		if( !this.token ) { await this.login(); }
+    		if( !this.token ) { this.token = await this.connect(); }
     		
     		let fetchUrl = lang ? this.urlBase+url+(criteria || '')+"?lang="+lang : this.urlBase+url+(criteria || '');
     		body = body || '';

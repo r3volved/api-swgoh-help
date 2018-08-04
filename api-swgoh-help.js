@@ -149,38 +149,46 @@ module.exports = class SwgohHelp {
     	}
     }
     
-    async unitStats( unit, gear ) {
+    async unitStats( unit ) {
     	try {
     		
     		if( !unit ) { throw new Error('no unit passed to stats calc'); }
-    		if( !gear ) {
-    			gear = await this.fetchAPI( this.data, 'gear' );
+    		
+    		unit = !Array.isArray( unit ) ? [unit] : unit;
+    		
+    		let payload = [];
+    		
+    		for( let u of unit ) {
+	    	
+				let eq = [];
+				if( u.equipped.length > 0 ) {
+					for( let g of u.equipped ) {
+						eq.push( g.equipmentId );
+					}
+				}
+
+				payload.push({
+    				characterID:u.defId,
+    				starLevel:u.rarity,
+    				level:u.level,
+    				gearLevel:u.gear,
+    				gear:eq
+    				
+    			});
+	    		
     		}
     		
-    		let url = this.statsUrl;
-    			url += unit.defId;
-    			url += `?stars=${unit.rarity}`;
-    			url += `&level=${unit.level}`;
-    			url += `&gearLevel=${unit.gear}`;
-    			
+			const stats = await this.fetch(this.statsUrl, {
+				method: 'POST',
+    		    headers: { 
+    		    	'Content-Type': 'application/json',
+    		    	'Content-Length': new Buffer(JSON.stringify(payload)).length
+    		    },
+    		    body:JSON.stringify(payload)
+    		});
     		
-			if( unit.equipped.length > 0 ) {
-				let eq = [];
-				for( let g of unit.equipped ) {
-					eq.push( gear[g.equipmentId].name);
-				}
-				url += `&gear=${eq.join(',')}`;
-			}
-		
-    		if( this.debug || this.verbose ) { 
-    			console.info('Fetching stats...');
-	    		if( this.debug ) { 
-		    		console.log('From: '+url);
-    			}
-        	}
-
-			const stats = await this.fetch(url);
-    		return await stats.json();
+			return await stats.json();
+			
     	} catch(e) {
     		throw e;
     	}

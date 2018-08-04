@@ -56,21 +56,25 @@ module.exports = class SwgohHelp {
     		    body:body    		    
     		});
 			
-    		if( token.status !== 200 ) { throw new Error('! Cannot login with these credentials'); }
+    		try {
 
-    		token = await token.json();
-    		
-    		this.token = { 
-		    	'Content-Type':'application/x-www-form-urlencoded',
-				'Authorization':'Bearer '+token.access_token 
-			};
-			
-    		if( this.debug ) {
-    			console.info('Acquired! : '+((now()-t0)/1000).toFixed(3)+' seconds');
-        		console.log('Token: '+JSON.stringify(this.token,'',' '));
-    	    	console.info('='.repeat(60));
+    			token = await token.json();
+        		
+    			this.token = { 
+    		    	'Content-Type':'application/x-www-form-urlencoded',
+    				'Authorization':'Bearer '+token.access_token 
+    			};
+    			
+        		if( this.debug ) {
+        			console.info('Acquired! : '+((now()-t0)/1000).toFixed(3)+' seconds');
+            		console.log('Token: '+JSON.stringify(this.token,'',' '));
+        	    	console.info('='.repeat(60));
+        		}
+
+    		} catch(e) {
+    			throw new Error('! Cannot login with these credentials\n'+token);
     		}
-    		
+    		    		    		
     	} catch(e) {
     		throw e;
     	}

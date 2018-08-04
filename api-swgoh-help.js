@@ -21,10 +21,12 @@ module.exports = class SwgohHelp {
         this.player = '/swgoh/player/';
         this.guild  = '/swgoh/guild/';
         
-        this.fetch = require('node-fetch');		
+        this.statsUrl = settings.statsUrl || 'https://crinolo-swgoh.glitch.me/baseStats/api/';
         
         this.verbose = settings.verbose || false;
         this.debug   = settings.debug || false;
+
+        this.fetch = require('node-fetch');		
         
     }
     
@@ -59,8 +61,8 @@ module.exports = class SwgohHelp {
     		token = await token.json();
     		
     		this.token = { 
-		    	'Content-Type': 'application/x-www-form-urlencoded',
-				'Authorization':"Bearer "+token.access_token 
+		    	'Content-Type':'application/x-www-form-urlencoded',
+				'Authorization':'Bearer '+token.access_token 
 			};
 			
     		if( this.debug ) {
@@ -142,6 +144,43 @@ module.exports = class SwgohHelp {
     	try {
     		allycode += details ? "/"+details : "";
     		return await this.fetchAPI( this.guild, allycode, lang );
+    	} catch(e) {
+    		throw e;
+    	}
+    }
+    
+    async unitStats( unit, gear ) {
+    	try {
+    		
+    		if( !unit ) { throw new Error('no unit passed to stats calc'); }
+    		if( !gear ) {
+    			gear = await this.fetchAPI( this.data, 'gear' );
+    		}
+    		
+    		let url = this.statsUrl;
+    			url += unit.defId;
+    			url += `?stars=${unit.rarity}`;
+    			url += `&level=${unit.level}`;
+    			url += `&gearLevel=${unit.gear}`;
+    			
+    		
+			if( unit.equipped.length > 0 ) {
+				let eq = [];
+				for( let g of unit.equipped ) {
+					eq.push( gear[g.equipmentId].name);
+				}
+				url += `&gear=${eq.join(',')}`;
+			}
+		
+    		if( this.debug || this.verbose ) { 
+    			console.info('Fetching stats...');
+	    		if( this.debug ) { 
+		    		console.log('From: '+url);
+    			}
+        	}
+
+			const stats = await this.fetch(url);
+    		return await stats.json();
     	} catch(e) {
     		throw e;
     	}

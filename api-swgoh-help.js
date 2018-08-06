@@ -151,10 +151,11 @@ module.exports = class SwgohHelp {
     	}
     }
     
+    //Calculate individual / array of player profile roster units
     async unitStats( unit ) {
     	try {
     		
-    		if( !unit ) { throw new Error('no unit passed to stats calc'); }
+    		if( !unit ) { throw new Error('no units passed to stats calc'); }
     		
     		unit = !Array.isArray( unit ) ? [unit] : unit;
     		
@@ -196,4 +197,26 @@ module.exports = class SwgohHelp {
     	}
     }
     
+    //Calculate all stats from /units
+    async rosterStats( units ) {
+    	try {
+    		
+    		if( !units ) { throw new Error('no roster passed to stats calc'); }
+    		
+			const stats = await this.fetch(this.statsUrl, {
+				method: 'POST',
+    		    headers: { 
+    		    	'Content-Type': 'application/json',
+    		    	'Content-Length': new Buffer(JSON.stringify(units)).length
+    		    },
+    		    body:JSON.stringify(units)
+    		});
+    		
+			return await stats.json();
+			
+    	} catch(e) {
+    		throw e;
+    	}
+    }
+
 }

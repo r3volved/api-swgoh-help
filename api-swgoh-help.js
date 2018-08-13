@@ -4,22 +4,24 @@ module.exports = class SwgohHelp {
 	
     constructor(settings) {
         
-    	this.user = "username="+settings.username;        
-    	this.user += "&password="+settings.password;
-    	this.user += "&grant_type=password";
-    	this.user += "&client_id="+(settings.client_id || '123');
-    	this.user += "&client_secret="+(settings.client_secret || 'abc');
+    	this.user = `username=${settings.username}`;        
+    	this.user += `&password=${settings.password}`;
+    	this.user += `&grant_type=password`;
+    	this.user += `&client_id=${(settings.client_id || '123')}`;
+    	this.user += `&client_secret=${(settings.client_secret || 'abc')}`;
     	    	    	
     	this.token = null;
     	
-    	this.urlBase = (settings.protocol || 'https')+"://";
-    	this.urlBase += settings.host || "api.swgoh.help";
+    	this.urlBase = `${(settings.protocol || 'https')}://`;
+    	this.urlBase += settings.host || "apiv2.swgoh.help";
     	this.urlBase += settings.port ? ":"+settings.port : '';
     	
     	this.signin = '/auth/signin';
-        this.data   = '/swgoh/data/';
-        this.player = '/swgoh/player/';
-        this.guild  = '/swgoh/guild/';
+        this.data   = '/swgoh/data';
+        this.player = '/swgoh/player';
+        this.guild  = '/swgoh/guild';
+        this.units  = '/swgoh/units';
+        this.status  = '/status';
         
         this.statsUrl = settings.statsUrl || 'https://crinolo-swgoh.glitch.me/baseStats/api/';
         
@@ -59,11 +61,6 @@ module.exports = class SwgohHelp {
     		connection = await connection.json();
     		
 			if( connection.access_token ) {
-    			connection = { 
-    		    	'Content-Type':'application/x-www-form-urlencoded',
-    				'Authorization':'Bearer '+connection.access_token 
-    			};
-    			
         		if( this.debug ) {
         			console.info('Acquired! : '+((now()-t0)/1000).toFixed(3)+' seconds');
             		console.log('Token: '+JSON.stringify(this.token,'',' '));
@@ -71,7 +68,7 @@ module.exports = class SwgohHelp {
         		}
 			}
 			
-			return connection;
+			return connection.access_token || null;
 			
     	} catch(e) {
     		throw e;
@@ -79,7 +76,7 @@ module.exports = class SwgohHelp {
     	
     }
     
-    async fetchAPI( url, criteria, lang, body ) {
+    async fetchAPI( url, payload ) {
     	
 		const t0 = now();
 		let response = null;
@@ -88,21 +85,24 @@ module.exports = class SwgohHelp {
     		
     		if( !this.token ) { this.token = await this.connect(); }
     		
-    		let fetchUrl = lang ? this.urlBase+url+(criteria || '')+"?lang="+lang : this.urlBase+url+(criteria || '');
-    		body = body || '';
+    		let fetchUrl = url.startsWith('http') ? fetchUrl : this.urlBase+url;
     		
     		if( this.debug || this.verbose ) { 
     			console.info('Fetching api...');
 	    		if( this.debug ) { 
 		    		console.log('From: '+fetchUrl);
-		    		console.log('Body: '+body);
+		    		console.log('Body: '+payload);
     			}
         	}
 
     		response = await this.fetch(fetchUrl, { 
     		    method: 'POST',
-    		    headers: this.token,
-    		    body: body
+    		    headers: { 
+    		    	'Authorization': 'Bearer '+this.token,
+    		    	'Content-Type': 'application/json',
+    		    	'Content-Length': new Buffer(JSON.stringify(payload)).length
+    		    },
+    		    body:JSON.stringify(payload)
     		});
 
     		try {
@@ -124,32 +124,47 @@ module.exports = class SwgohHelp {
     	
     }
     
-    async fetchData( criteria, details, lang ) {
+    async fetchData( payload ) {
     	try {
-    		criteria += details ? "/"+details : "";
-    		return await this.fetchAPI( this.data, criteria, lang );
+    		return await this.fetchAPI( this.data, payload );
     	} catch(e) {
     		throw e;
     	}
     }
     
-    async fetchPlayer( allycode, details, lang ) {
+    async fetchPlayer( payload ) {
     	try {
-    		allycode += details ? "/"+details : "";
-    		return await this.fetchAPI( this.player, allycode, lang );
+    		return await this.fetchAPI( this.player, payload );
     	} catch(e) {
     		throw e;
     	}
     }
     
-    async fetchGuild( allycode, details, lang ) {
+    async fetchGuild( payload ) {
     	try {
-    		allycode += details ? "/"+details : "";
-    		return await this.fetchAPI( this.guild, allycode, lang );
+    		return await this.fetchAPI( this.guild, payload );
     	} catch(e) {
     		throw e;
     	}
     }
+    
+    async fetchUnits( payload ) {
+    	try {
+    		return await this.fetchAPI( this.units, payload );
+    	} catch(e) {
+    		throw e;
+    	}
+    }
+    
+    async fetchStatus() {
+    	try {
+    		let res = await this.fetch( this.urlBase+this.status );
+    		return await res.json();
+    	} catch(e) {
+    		throw e;
+    	}
+    }
+    
     
     //Calculate individual / array of player profile roster units
     async unitStats( unit ) {
@@ -175,8 +190,7 @@ module.exports = class SwgohHelp {
     				starLevel:u.rarity,
     				level:u.level,
     				gearLevel:u.gear,
-    				gear:eq
-    				
+    				gear:eq    				
     			});
 	    		
     		}

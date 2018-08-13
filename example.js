@@ -6,19 +6,78 @@ async function example() {
 		const swgoh = new SwgohHelp({
 			"username":"YOUR_USERNAME",
 			"password":"YOUR_PASSWORD",
+			"host":"apiv2.swgoh.help"
 		});
 		
 		let result = null;
+		let payload = {};
+		
 		switch( process.argv[2] ) {
 		
 			case "player":
-				result = await swgoh.fetchPlayer( parseInt(process.argv[3]) );
+				
+				payload = {
+					allycodes:[ 282392964, 569597317 ],
+					language:"jpn_jp"
+				};	
+				result = await swgoh.fetchPlayer( payload );
+				
 				break;
+			
 			case "guild":
-				result = await swgoh.fetchGuild( parseInt(process.argv[3]) );
+				
+				payload = {
+					allycode:752112593,
+					language:"eng_us"
+				};	
+				result = await swgoh.fetchGuild( payload );
+				
 				break;
+				
+			case "units":
+				
+				payload = {
+					allycode:[ 282392964, 569597317 ],
+					language:"eng_us"
+				};
+				result = await swgoh.fetchUnits( payload );
+				
+				break;
+				
+			case "data":
+				
+				payload = {
+					collection:"unitsList",
+					language:"eng_us",
+					match:{ baseId:"VADER" }
+				};
+				result = await swgoh.fetchData( payload );
+				
+				break;
+				
+			case "rstats":
+				
+				payload = {
+					allycode:[ 282392964, 569597317 ],
+					language:"eng_us"
+				};
+				result = await swgoh.fetchUnits( payload );
+				result = await swgoh.rosterStats( result );
+				
+				break;
+				
+			case "ustats":
+				
+				payload = {
+					allycodes:282392964
+				};	
+				result = await swgoh.fetchPlayer( payload );
+				result = await swgoh.unitStats([ result.roster[10], result.roster[20] ]);
+				
+				break;
+			
 			default:
-				result = await swgoh.fetchData( process.argv[2] );
+				result = await swgoh.fetchStatus();
 				
 		}
 		

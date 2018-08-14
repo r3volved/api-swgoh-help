@@ -25,13 +25,13 @@ Require and initialize connection:
 
 Required parameters (one of):
 
-* allycode:<int> - single allycode
-* allycodes:[ <int> ] - array of allycodes
+* allycode:\<int\> - single allycode
+* allycodes:[ \<int\> ] - array of allycodes
 
 Optional parameters:
 
-* language:<string> - include localized names in response
-* project:<object> - reduce response size by specifying only the fields you want  
+* language:\<string\> - include localized names in response
+* project:\<object\> - reduce response size by specifying only the fields you want  
 
 	let payload = {
 		allycodes:[ 123456789, 234567890 ],
@@ -51,11 +51,11 @@ Optional parameters:
 
 Required parameters:
 
-* allycode:<int> - single allycode
+* allycode:\<int\> - single allycode
 
 Optional parameters:
 
-* project:<object> - reduce response size by specifying only the fields you want  
+* project:\<object\> - reduce response size by specifying only the fields you want  
 
 	let payload = { 
 		allycode:123456789 
@@ -69,8 +69,8 @@ Optional parameters:
 
 Required parameters (one of):
 
-* allycode:<int> - single allycode
-* allycodes:[ <int> ] - array of allycodes
+* allycode:\<int\> - single allycode
+* allycodes:[ \<int\> ] - array of allycodes
 
 	let payload = {
 		allycodes:[ 123456789, 234567890 ]
@@ -84,13 +84,13 @@ Required parameters (one of):
 	
 Required parameters:
 
-* collection:<string> - the list you want to access (for a list of available collections, see https://apiv2.swgoh.help/
+* collection:\<string\> - the list you want to access (for a list of available collections, see https://apiv2.swgoh.help/
 
 Optional parameters:
 
-* language:<string> - include localized names in response
-* match:<object> - match criteria to filter against
-* project:<object> - reduce response size by specifying only the fields you want  
+* language:\<string\> - include localized names in response
+* match:\<object\> - match criteria to filter against
+* project:\<object\> - reduce response size by specifying only the fields you want  
 
 	let payload = {
 		collection:"unitsList",

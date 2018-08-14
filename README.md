@@ -4,7 +4,7 @@ JavaScript client wrapper for the API at https://api.swgoh.help
 For api access or support, please visit us on discord: https://discord.gg/kau4XTB
 
 
-## Usage
+## Setup
 
 Install via npm:
 
@@ -18,83 +18,115 @@ Require and initialize connection:
 		"password":"YOUR_PASSWORD"
 	});
 
-Request player profile by allycode:
 
-	let allycode = 123456789;
-	let player = await swapi.fetchPlayer( allycode );
+## Usage
+
+### Player profiles ###
+
+Required parameters (one of):
+
+* allycode:<int> - single allycode
+* allycodes:[ <int> ] - array of allycodes
+
+Optional parameters:
+
+* language:<string> - include localized names in response
+* project:<object> - reduce response size by specifying only the fields you want  
+
+	let payload = {
+		allycodes:[ 123456789, 234567890 ],
+		language:"eng_us",
+		project:{
+			name:1,
+			allyCode:1,
+			arena:1
+		}
+	};
+	
+	let player = await swapi.fetchPlayer( payload );
 	console.log( player );
 
-	/* Other player reports */
-	//player = await swapi.fetchPlayer( allycode, 'mods' );
-	//player = await swapi.fetchPlayer( allycode, 'zetas' );	
-	//player = await swapi.fetchPlayer( allycode, 'units' );	
 
-	/* Optional language specification */
-	//player = await swapi.fetchPlayer( allycode, null, 'GER_DE' );	
+### Guild profiles ###
+
+Required parameters:
+
+* allycode:<int> - single allycode
+
+Optional parameters:
+
+* project:<object> - reduce response size by specifying only the fields you want  
+
+	let payload = { 
+		allycode:123456789 
+	};
 	
-Request guild roster by allycode (lengthy request):
-
-	let allycode = 123456789;
-	let guild = await swapi.fetchGuild( allycode );
+	let guild = await swapi.fetchGuild( payload );
 	console.log( guild );
 
-	/* Other guild reports */
-	//guild = await swapi.fetchGuild( allycode, 'details' );
-	//guild = await swapi.fetchGuild( allycode, 'roster' );	
-	//guild = await swapi.fetchGuild( allycode, 'units' );	
 
-	/* Optional language specification */
-	//guild = await swapi.fetchGuild( allycode, null, 'JPN_JP' );	
-	
-Request available support data:
+### Units index ###
 
-	let criteria = 'units';
-	let data = await swapi.fetchData( criteria );
-	console.log( data );
-	
-	/* Available data criteria */
-	// events
-	// units
-	// arena
-	// gear
-	// mod-sets
-	// mod-stats
-	// skills
-	// skill-types
-	// tb
-	// zetas
-	// zeta-abilities
-	// zeta-recommendations
-	// battles
-	
-	/* Optional language specification */
-	//data = await swapi.fetchData( 'units', null, 'KOR_KR' );	
+Required parameters (one of):
 
+* allycode:<int> - single allycode
+* allycodes:[ <int> ] - array of allycodes
+
+	let payload = {
+		allycodes:[ 123456789, 234567890 ]
+	};
+	
+	let rosters = await swapi.fetchUnits( payload );
+	console.log( rosters );
+
+
+### Game details / support data ###
+	
+Required parameters:
+
+* collection:<string> - the list you want to access (for a list of available collections, see https://apiv2.swgoh.help/
+
+Optional parameters:
+
+* language:<string> - include localized names in response
+* match:<object> - match criteria to filter against
+* project:<object> - reduce response size by specifying only the fields you want  
+
+	let payload = {
+		collection:"unitsList",
+		language:"eng_us",
+		match:{
+			rarity:7
+		},
+		project:{
+			baseId:1,
+			nameKey:1,
+			descKey:1
+		}
+	};
+	
+	let units = await swapi.fetchData( payload );
+	console.log( units );
+	
 
 ## Utilities ##
 
 ### Unit (base) stats ###
 
-Calculate unit stats from a player profile roster
+Calculate one or more unit stats from a player profile roster-unit object
 
-	let allycode = 123456789;
-	const player   = await swapi.fetchPlayer( allycode );
+	let payload  = { allycode:123456789 };
+	const player = await swapi.fetchPlayer( payload );
 	
 	let units    = [ player.roster[10], player.roster[20] ];
 	const stats  = await swapi.unitStats( units );
 	
-Calculate a player's entire roster stats 
+Calculate one or more player's entire roster stats from units index
 
-	let allycode = 123456789;
-	const units  = await swapi.fetchPlayer( allycode, 'units' );
-	const stats  = await swapi.rosterStats( units );
-	
-Calculate entire guild roster stats (lengthy request)
-
-	let allycode = 123456789;
-	const units  = await swapi.fetchGuild( allycode, 'units' );
-	const stats  = await swapi.rosterStats( units );
-	
+	let payload   = { allycodes:[ 123456789, 234567890 ] };
+	const roster  = await swapi.fetchUnits( payload );
+	const rStats  = await swapi.rosterStats( roster );
+		
 
 # Available language clients
 

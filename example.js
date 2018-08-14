@@ -17,7 +17,7 @@ async function example() {
 			case "player":
 				
 				payload = {
-					allycodes:[ 282392964, 569597317 ],
+					allycodes:[ 282392964 ],
 					language:"jpn_jp"
 				};	
 				result = await swgoh.fetchPlayer( payload );
@@ -47,9 +47,17 @@ async function example() {
 			case "data":
 				
 				payload = {
-					collection:"unitsList",
-					language:"eng_us",
-					match:{ baseId:"VADER" }
+				    "collection":"abilityList",
+				    "language":"eng_us",
+				    "project":{
+				        "_id":0,
+				        "id":1,
+				        "nameKey":1,
+				        "descKey":1,
+				        "cooldown":1,
+				        "abilityType":1,
+				        "aiParams":1
+				    }
 				};
 				result = await swgoh.fetchData( payload );
 				

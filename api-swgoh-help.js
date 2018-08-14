@@ -58,7 +58,11 @@ module.exports = class SwgohHelp {
     		    body:body    		    
     		});
 			
-    		connection = await connection.json();
+    		try {
+    			connection = await connection.json();
+    		} catch(e) {
+    			throw e;
+    		}
     		
 			if( connection.access_token ) {
         		if( this.debug ) {

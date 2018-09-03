@@ -1,5 +1,6 @@
 # api-swgoh-help
-JavaScript client wrapper for the API at https://apiv2.swgoh.help
+JavaScript client wrapper for the API at https://api.swgoh.help
+(Version 3.x.x)
 
 For api access or support, please visit us on discord: https://discord.gg/kau4XTB
 

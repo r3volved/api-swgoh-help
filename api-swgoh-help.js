@@ -13,20 +13,24 @@ module.exports = class SwgohHelp {
     	this.token = null;
     	
     	this.urlBase = `${(settings.protocol || 'https')}://`;
-    	this.urlBase += settings.host || "apiv2.swgoh.help";
+    	this.urlBase += settings.host || "api.swgoh.help";
     	this.urlBase += settings.port ? ":"+settings.port : '';
     	
-    	this.signin = '/auth/signin';
-        this.data   = '/swgoh/data';
-        this.player = '/swgoh/player';
-        this.guild  = '/swgoh/guild';
-        this.units  = '/swgoh/units';
-        this.status  = '/status';
+    	this.signin  = '/auth/signin';
+
+    	this.data    = '/swgoh/data';
+        this.player  = '/swgoh/player';
+        this.guild   = '/swgoh/guild';
+        this.units   = '/swgoh/units';
+        this.events  = '/swgoh/events';
+        this.battles = '/swgoh/battles';
+        this.zetas   = '/swgoh/zetas';
+        this.squads  = '/swgoh/squads';
         
         this.statsUrl = settings.statsUrl || 'https://crinolo-swgoh.glitch.me/baseStats/api/';
         
         this.verbose = settings.verbose || false;
-        this.debug   = settings.debug || false;
+        this.debug   = settings.debug   || false;
 
         this.fetch = require('node-fetch');		
         
@@ -45,7 +49,7 @@ module.exports = class SwgohHelp {
     			console.info('Acquiring token...'); 
     			if( this.debug ) { 
     				console.log('From: '+url);
-    				console.log('Body: '+body); 
+    				console.log('Body: '+JSON.stringify(body)); 
     			}
         	}
     		
@@ -58,21 +62,36 @@ module.exports = class SwgohHelp {
     		    body:body    		    
     		});
 			
-    		try {
-    			connection = await connection.json();
-    		} catch(e) {
-    			throw e;
-    		}
-    		
-			if( connection.access_token ) {
+			let result = null;
+			if( connection.ok ) {
+
+        	    result = await connection.json();
+
+            } else {
+                result = await response.text();
+                let err = new Error(JSON.parse(result).error);
+                err.status = JSON.parse(result).status;
+                throw err;
+            }
+               		
+			if( result.access_token ) {
         		if( this.debug ) {
         			console.info('Acquired! : '+((now()-t0)/1000).toFixed(3)+' seconds');
-            		console.log('Token: '+JSON.stringify(this.token,'',' '));
+            		console.log('Token: '+JSON.stringify(result.access_token,'',' '));
         	    	console.info('='.repeat(60));
         		}
+        		
+        		setTimeout( () => {
+        			if( this.debug ) { 
+        				console.log('Expiring token: '+this.token);
+        			}
+        			this.token = null;
+        		}, 1000*60*59);
+        		
 			}
 			
-			return connection.access_token || null;
+			this.token = result.access_token || null;
+			return this.token;
 			
     	} catch(e) {
     		throw e;
@@ -84,10 +103,10 @@ module.exports = class SwgohHelp {
     	
 		const t0 = now();
 		let response = null;
-		
+		payload = payload || {};
     	try {
     		
-    		if( !this.token ) { this.token = await this.connect(); }
+    		if( !this.token ) { await this.connect(); }
     		
     		let fetchUrl = url.startsWith('http') ? fetchUrl : this.urlBase+url;
     		
@@ -95,7 +114,7 @@ module.exports = class SwgohHelp {
     			console.info('Fetching api...');
 	    		if( this.debug ) { 
 		    		console.log('From: '+fetchUrl);
-		    		console.log('Body: '+payload);
+		    		console.log('Body: '+JSON.stringify(payload));
     			}
         	}
 
@@ -109,23 +128,68 @@ module.exports = class SwgohHelp {
     		    body:JSON.stringify(payload)
     		});
 
-    		try {
-    			response = await response.json();
-    		} catch(e) {
-    			response = { response:response };
-    		}
-    		
-    		if( this.debug ) {
-    			console.info('Fetched! : '+((now()-t0)/1000).toFixed(3)+' seconds');
-    	    	console.info('='.repeat(60));
-    		}
+            let result = null;
+			if( response.ok ) {
 
-    		return response;
+    	        result = await response.json();
+        		if( this.debug ) {
+        			console.info('Fetched! : '+((now()-t0)/1000).toFixed(3)+' seconds');
+        	    	console.info('='.repeat(60));
+        		}
+
+            } else {
+                result = await response.text();
+                let err = new Error(JSON.parse(result).error);
+                err.status = JSON.parse(result).status;
+                throw err;
+            }
+    		
+    		return result;
     		
     	} catch(e) {
     		throw e;
     	}
     	
+    }
+    
+    async fetch( tofetch, payload ) {
+    	try {
+    		return await this.fetchAPI( '/swgoh/'+tofetch, payload );
+    	} catch(e) {
+    		throw e;
+    	}
+    }
+        
+    async fetchZetas() {
+    	try {
+    		return await this.fetchAPI( this.zetas, {} );
+    	} catch(e) {
+    		throw e;
+    	}
+    }
+    
+    async fetchSquads() {
+    	try {
+    		return await this.fetchAPI( this.squads, {} );
+    	} catch(e) {
+    		throw e;
+    	}
+    }
+    
+    async fetchBattles( payload ) {
+    	try {
+    		return await this.fetchAPI( this.battles, payload );
+    	} catch(e) {
+    		throw e;
+    	}
+    }
+    
+    async fetchEvents( payload ) {
+    	try {
+    		return await this.fetchAPI( this.events, payload );
+    	} catch(e) {
+    		throw e;
+    	}
     }
     
     async fetchData( payload ) {
@@ -155,15 +219,6 @@ module.exports = class SwgohHelp {
     async fetchUnits( payload ) {
     	try {
     		return await this.fetchAPI( this.units, payload );
-    	} catch(e) {
-    		throw e;
-    	}
-    }
-    
-    async fetchStatus() {
-    	try {
-    		let res = await this.fetch( this.urlBase+this.status );
-    		return await res.json();
     	} catch(e) {
     		throw e;
     	}

@@ -144,6 +144,15 @@ const roster  = await swapi.fetchUnits( payload );
 const rStats  = await swapi.rosterStats( roster );
 ```
 
+Calculate one or more players unit stats including mods
+
+```js
+const allycode = 123456789;
+const baseId = "BB8"; //null for all units
+const stats  = await swapi.calcStats( allycode, baseId, [ "includeMods","withModCalc","gameStyle" ] );
+```
+
+
 
 # Available language clients
 
@@ -151,3 +160,4 @@ const rStats  = await swapi.rosterStats( roster );
 * PHP: 		https://github.com/r3volved/api-swgoh-help/tree/php
 * Java: 	https://github.com/j0rdanit0/api-swgoh-help
 * C#:		https://github.com/SdtBarbarossa/SWGOH-Help-Api-C-Sharp
+* Python:   https://github.com/platzman/swgoh.help.python

@@ -28,6 +28,7 @@ module.exports = class SwgohHelp {
         this.squads  = '/swgoh/squads';
         
         this.statsUrl = settings.statsUrl || 'https://crinolo-swgoh.glitch.me/baseStats/api/';
+        this.statsApi = settings.statsApi || 'https://crinolo-swgoh.glitch.me/statCalc/api/characters/player/';
         
         this.verbose = settings.verbose || false;
         this.debug   = settings.debug   || false;
@@ -68,7 +69,7 @@ module.exports = class SwgohHelp {
         	    result = await connection.json();
 
             } else {
-                result = await response.text();
+                result = await connection.text();
                 let err = new Error(JSON.parse(result).error);
                 err.status = JSON.parse(result).status;
                 throw err;
@@ -139,6 +140,7 @@ module.exports = class SwgohHelp {
 
             } else {
                 result = await response.text();
+                console.log( result );
                 let err = new Error(JSON.parse(result).error);
                 err.status = JSON.parse(result).status;
                 throw err;
@@ -284,6 +286,27 @@ module.exports = class SwgohHelp {
     		    },
     		    body:JSON.stringify(units)
     		});
+    		
+			return await stats.json();
+			
+    	} catch(e) {
+    		throw e;
+    	}
+    }
+
+    //Calculate all stats from /units
+    async calcStats( allycode, baseId, flags ) {
+    	try {
+    		
+    		if( !allycode ) { throw new Error('no allycode passed to calc stats'); }
+            baseId = baseId ? baseId.toUpperCase() : baseId;
+    		flags = flags ? flags.join(',') : flags;
+    		
+    		let apiUrl = this.statsApi + allycode;
+    		    apiUrl += baseId ? '/'+baseId : '';
+    		    apiUrl += flags ? '?flags='+flags : '';
+    		
+			const stats = await this.fetch(apiUrl);
     		
 			return await stats.json();
 			

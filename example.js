@@ -15,31 +15,34 @@ async function example() {
         console.log('');
 
         //Test connect
-        await testConnect(swgoh)
+        //await testConnect(swgoh)
         
         //Test player		        
-        await testPlayer(swgoh)
+        //await testPlayer(swgoh)
         
         //Test guild		        
-        await testGuild(swgoh)
+        //await testGuild(swgoh)
         
         //Test units
-        await testUnits(swgoh)
+        //await testUnits(swgoh)
         
         //Test data
-        await testData(swgoh)
+        //await testData(swgoh)
         
         //Test events		        
-        await testEvents(swgoh)
+        //await testEvents(swgoh)
         
         //Test battles		        
-        await testBattles(swgoh)
+        //await testBattles(swgoh)
         
         //Test squads
-        await testSquads(swgoh)
+        //await testSquads(swgoh)
         
         //Test zetas
-        await testZetas(swgoh)
+        //await testZetas(swgoh)
+        
+        //Test stats
+        await testStatsCalc(swgoh)
         
         console.log('');
 		console.log('======================');        
@@ -90,6 +93,29 @@ async function testConnect(swgoh) {
         console.log('');
     } catch(e) {
         reportError(e);  
+    }
+}
+
+
+async function testStatsCalc(swgoh) {
+    try {
+        console.log('++ Testing stats calc ++\n');
+
+        let result = null;
+        
+        try {
+            result = await swgoh.calcStats( 282392964, 'BB8', ["includeMods","withModCalc","gameStyle"] );
+            console.log( result );
+
+            result = await swgoh.calcStats( 282392964, null, ["includeMods","withModCalc","gameStyle"] );
+            console.log( result );
+
+        } catch(e) {
+            reportError(e);  
+        }
+                
+    } catch(e) {
+        throw e;
     }
 }
 

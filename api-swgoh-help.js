@@ -143,20 +143,24 @@ module.exports = class SwgohHelp {
 
             } else {
                 let err = new Error('');
+                result = await response.text();                        
                 try {
-        	        result = await response.json();
+        	        result = JSON.parse(result);
         	        err.message = result;
-                    err.code = result.status;
+                    err.code = result.status || result.code || result.statusCode || 500;
                 } catch(e) {
-                    //result = await response.text();
-                    err.message = result;
-                    err.code = result.status;
+                    try {
+                        err.message = result;
+                        err.code = result.status || result.code || result.statusCode || 500;
+                    } catch(ee) { console.error(ee); }
                 }
                 throw err;
             }
     		
     		if( this.debug ) {
-                console.log('Result: ', result);
+                console.log('-'.repeat(50));
+                console.log('response: ', result);
+                console.log('-'.repeat(50));
             }
             
             return result;

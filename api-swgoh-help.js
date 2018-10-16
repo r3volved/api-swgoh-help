@@ -19,16 +19,18 @@ module.exports = class SwgohHelp {
     	this.signin  = '/auth/signin';
 
     	this.data    = '/swgoh/data';
-        this.player  = '/swgoh/player';
-        this.guild   = '/swgoh/guild';
-        this.units   = '/swgoh/units';
+        this.player  = '/swgoh/players';
+        this.guild   = '/swgoh/guilds';
+        //this.units   = '/swgoh/units';
         this.events  = '/swgoh/events';
         this.battles = '/swgoh/battles';
         this.zetas   = '/swgoh/zetas';
         this.squads  = '/swgoh/squads';
+        this.roster  = '/swgoh/roster';
         
         this.statsUrl = settings.statsUrl || 'https://crinolo-swgoh.glitch.me/baseStats/api/';
-        this.statsApi = settings.statsApi || 'https://crinolo-swgoh.glitch.me/statCalc/api/characters/player/';
+        this.charStatsApi = settings.charStatsApi || 'https://crinolo-swgoh.glitch.me/statCalc/api/characters';
+        this.shipStatsApi = settings.shipStatsApi || 'https://crinolo-swgoh.glitch.me/statCalc/api/ships';
         
         this.verbose = settings.verbose || false;
         this.debug   = settings.debug   || false;
@@ -87,7 +89,7 @@ module.exports = class SwgohHelp {
         				console.log('Expiring token: '+this.token);
         			}
         			this.token = null;
-        		}, 1000*60*59);
+        		}, 60000*59);
         		
 			}
 			
@@ -121,6 +123,7 @@ module.exports = class SwgohHelp {
 
     		response = await this.fetch(fetchUrl, { 
     		    method: 'POST',
+				timeout: 60000*5,
     		    headers: { 
     		    	'Authorization': 'Bearer '+this.token,
     		    	'Content-Type': 'application/json',
@@ -139,14 +142,24 @@ module.exports = class SwgohHelp {
         		}
 
             } else {
-                result = await response.text();
-                console.log( result );
-                let err = new Error(JSON.parse(result).error);
-                err.status = JSON.parse(result).status;
+                let err = new Error('');
+                try {
+        	        result = await response.json();
+        	        err.message = result;
+                    err.code = result.status;
+                } catch(e) {
+                    //result = await response.text();
+                    err.message = result;
+                    err.code = result.status;
+                }
                 throw err;
             }
     		
-    		return result;
+    		if( this.debug ) {
+                console.log('Result: ', result);
+            }
+            
+            return result;
     		
     	} catch(e) {
     		throw e;
@@ -220,7 +233,22 @@ module.exports = class SwgohHelp {
     
     async fetchUnits( payload ) {
     	try {
-    		return await this.fetchAPI( this.units, payload );
+            let units = await this.fetchAPI( this.roster, payload );
+    		return units.reduce((ucc,p) => {
+    		    Object.keys(p).forEach(u => {
+    		        ucc[u] = ucc[u] || [];
+    		        ucc[u].push(p[u]);
+                });
+                return ucc;
+    		},{});
+    	} catch(e) {
+    		throw e;
+    	}
+    }
+    
+    async fetchRoster( payload ) {
+    	try {
+    		return await this.fetchAPI( this.roster, payload );
     	} catch(e) {
     		throw e;
     	}
@@ -228,7 +256,7 @@ module.exports = class SwgohHelp {
     
     
     //Calculate individual / array of player profile roster units
-    async unitStats( unit ) {
+    async rosterStats( unit, flags, type ) {
     	try {
     		
     		if( !unit ) { throw new Error('no units passed to stats calc'); }
@@ -239,25 +267,23 @@ module.exports = class SwgohHelp {
     		
     		for( let u of unit ) {
 	    	
-				let eq = [];
-				if( u.equipped.length > 0 ) {
-					for( let g of u.equipped ) {
-						eq.push( g.equipmentId );
-					}
-				}
-
 				payload.push({
-    				characterID:u.defId,
-    				starLevel:u.rarity,
+    				defId:u.defId,
+    				rarity:u.rarity,
     				level:u.level,
-    				gearLevel:u.gear,
-    				gear:eq    				
+    				gear:u.gear,
+    				equipped:u.equipped,
+    				mods:u.mods    				
     			});
 	    		
     		}
     		
-			const stats = await this.fetch(this.statsUrl, {
+    		let apiUrl = type && ( type === 'SHIP' || type === 2 ) ? this.shipStatsApi : this.charStatsApi;
+    		    apiUrl += flags ? '?flags='+flags : '';
+
+			const stats = await this.fetch(apiUrl, {
 				method: 'POST',
+				timeout: 60000*5,
     		    headers: { 
     		    	'Content-Type': 'application/json',
     		    	'Content-Length': new Buffer(JSON.stringify(payload)).length
@@ -272,19 +298,23 @@ module.exports = class SwgohHelp {
     	}
     }
     
-    //Calculate all stats from /units
-    async rosterStats( units ) {
+    //Calculate all stats from a single /units unit
+    async unitsStats( unit, flags, type ) {
     	try {
     		
-    		if( !units ) { throw new Error('no roster passed to stats calc'); }
+    		if( !unit ) { throw new Error('no roster passed to stats calc'); }
     		
-			const stats = await this.fetch(this.statsUrl, {
+    		let apiUrl = type && ( type === 'SHIP' || type === 2 ) ? this.shipStatsApi : this.charStatsApi;
+    		    apiUrl += flags ? '?flags='+flags : '';
+    		    
+			const stats = await this.fetch(apiUrl, {
 				method: 'POST',
+				timeout: 60000*5,
     		    headers: { 
     		    	'Content-Type': 'application/json',
-    		    	'Content-Length': new Buffer(JSON.stringify(units)).length
+    		    	'Content-Length': new Buffer(JSON.stringify(unit)).length
     		    },
-    		    body:JSON.stringify(units)
+    		    body:JSON.stringify(unit)
     		});
     		
 			return await stats.json();
@@ -295,14 +325,15 @@ module.exports = class SwgohHelp {
     }
 
     //Calculate all stats from /units
-    async calcStats( allycode, baseId, flags ) {
+    async calcStats( allycode, baseId, flags, type ) {
     	try {
     		
     		if( !allycode ) { throw new Error('no allycode passed to calc stats'); }
-            baseId = baseId ? baseId.toUpperCase() : baseId;
+    		baseId = baseId ? baseId.toUpperCase() : baseId;
     		flags = flags ? flags.join(',') : flags;
     		
-    		let apiUrl = this.statsApi + allycode;
+    		let apiUrl = type && ( type === 'SHIP' || type === 2 ) ? this.shipStatsApi : this.charStatsApi;
+    		    apiUrl += '/player/' + allycode;
     		    apiUrl += baseId ? '/'+baseId : '';
     		    apiUrl += flags ? '?flags='+flags : '';
     		

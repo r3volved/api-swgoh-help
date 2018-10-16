@@ -126,28 +126,33 @@ console.log( battles );
 
 ### Unit (base) stats ###
 
-Calculate one or more unit stats from a player profile roster-unit object
+Calculate one or more unit stats from a profile roster array
+Optionally include flags for Crinolo's stat api
 
 ```js
 let payload  = { allycode:123456789 };
 const player = await swapi.fetchPlayer( payload );
 
-let units    = [ player.roster[10], player.roster[20] ];
-const stats  = await swapi.unitStats( units );
+const units  = [ player.roster[10], player.roster[20] ];
+const stats  = await swapi.rosterStats( units, [ "includeMods","withModCalc","gameStyle" ] );
 ```
 	
-Calculate one or more player's entire roster stats from units index
+Calculate one or more player's specific unit stats from units index
+Optionally include flags for Crinolo's stat api
 
 ```js
-let payload   = { allycodes:[ 123456789, 234567890 ] };
-const roster  = await swapi.fetchUnits( payload );
-const rStats  = await swapi.rosterStats( roster );
+let payload  = { allycodes:[ 123456789, 234567890 ] };
+const units  = await swapi.fetchUnits( payload );
+
+const unit   = {"DARTHTRAYA":units["DARTHTRAYA"]};
+const stats  = await swapi.unitStats( unit, [ "includeMods","withModCalc","gameStyle" ] );
 ```
 
-Calculate one or more players unit stats including mods
+Calculate player unit stats including mods
+Optionally include flags for Crinolo's stat api
 
 ```js
-const allycode = 123456789;
+let allycode = 123456789;
 const baseId = "BB8"; //null for all units
 const stats  = await swapi.calcStats( allycode, baseId, [ "includeMods","withModCalc","gameStyle" ] );
 ```

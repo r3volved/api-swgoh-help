@@ -235,16 +235,26 @@ module.exports = class SwgohHelp {
     	}
     }
     
+/*
     async fetchUnits( payload ) {
-    	try {
+	    try {
             let units = await this.fetchAPI( this.roster, payload );
-    		return units.reduce((ucc,p) => {
-    		    Object.keys(p).forEach(u => {
-    		        ucc[u] = ucc[u] || [];
-    		        ucc[u].push(p[u]);
+		    return units.reduce((ucc,p) => {
+		        Object.keys(p).forEach(u => {
+		            ucc[u] = ucc[u] || [];
+		            ucc[u].push(p[u]);
                 });
                 return ucc;
-    		},{});
+		    },{});
+	    } catch(e) {
+		    throw e;
+	    }
+    }
+*/
+    
+    async fetchUnits( payload ) {
+    	try {
+    		return await this.fetchAPI( this.units, payload );
     	} catch(e) {
     		throw e;
     	}

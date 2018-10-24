@@ -21,7 +21,7 @@ module.exports = class SwgohHelp {
     	this.data    = '/swgoh/data';
         this.player  = '/swgoh/players';
         this.guild   = '/swgoh/guilds';
-        //this.units   = '/swgoh/units';
+        this.units   = '/swgoh/units';
         this.events  = '/swgoh/events';
         this.battles = '/swgoh/battles';
         this.zetas   = '/swgoh/zetas';
@@ -34,6 +34,7 @@ module.exports = class SwgohHelp {
         
         this.verbose = settings.verbose || false;
         this.debug   = settings.debug   || false;
+        this.dump    = settings.dump    || false;
 
         this.fetch = require('node-fetch');		
         
@@ -72,8 +73,13 @@ module.exports = class SwgohHelp {
 
             } else {
                 result = await connection.text();
-                let err = new Error(JSON.parse(result).error);
-                err.status = JSON.parse(result).status;
+                let err = null;
+                try {
+                  err = new Error(JSON.parse(result).error);
+                  err.code = JSON.parse(result).code;
+                } catch(e) {
+                  err = new Error(result);
+                }
                 throw err;
             }
                		
@@ -103,72 +109,65 @@ module.exports = class SwgohHelp {
     }
     
     async fetchAPI( url, payload ) {
-    	
-		const t0 = now();
-		let response = null;
-		payload = payload || {};
-    	try {
-    		
-    		if( !this.token ) { await this.connect(); }
-    		
-    		let fetchUrl = url.startsWith('http') ? fetchUrl : this.urlBase+url;
-    		
-    		if( this.debug || this.verbose ) { 
-    			console.info('Fetching api...');
-	    		if( this.debug ) { 
-		    		console.log('From: '+fetchUrl);
-		    		console.log('Body: '+JSON.stringify(payload));
-    			}
+    	return new Promise( async (resolve, reject) => {
+		    const t0 = now();
+		    let response = null;
+		    payload = payload || {};
+        	try {
+        		
+        		if( !this.token ) { await this.connect(); }
+        		
+        		let fetchUrl = url.startsWith('http') ? fetchUrl : this.urlBase+url;
+        		
+        		if( this.debug || this.verbose ) { 
+        			console.info('Fetching api...');
+	        		if( this.debug ) { 
+		        		console.log('From: '+fetchUrl);
+		        		console.log('Body: '+JSON.stringify(payload));
+        			}
+            	}
+
+                let result = null;
+
+                response = this.fetch(fetchUrl, { 
+        		    method: 'POST',
+			        timeout: 60000*5,
+        		    headers: { 
+        		    	'Authorization': 'Bearer '+this.token,
+        		    	'Content-Type': 'application/json',
+        		    	'Content-Length': new Buffer(JSON.stringify(payload)).length
+        		    },
+        		    body:JSON.stringify(payload)
+        		})
+        		.then(r => r.json())
+        		.then(result => {
+            		
+                    if( this.debug ) {
+            			console.info('Fetched! : '+((now()-t0)/1000).toFixed(3)+' seconds');
+            	    	console.info('='.repeat(60));
+                		if( this.dump ) {
+                            console.log('-'.repeat(50));
+                            console.log('response: ', result);
+                            console.log('-'.repeat(50));
+                        }            
+            		}
+
+                    if( result.error && result.error.length > 0 ) {
+                        let err = new Error(result.error.error);
+                		    err.description = result.error.description;
+                            err.code = result.error.code;
+                        reject( err );
+                    } 
+            		
+                    resolve( result );                		
+        		
+        		})
+        		.catch(e => reject(e));
+	            
+        	} catch(e) {
+        		reject(e);
         	}
-
-    		response = await this.fetch(fetchUrl, { 
-    		    method: 'POST',
-				timeout: 60000*5,
-    		    headers: { 
-    		    	'Authorization': 'Bearer '+this.token,
-    		    	'Content-Type': 'application/json',
-    		    	'Content-Length': new Buffer(JSON.stringify(payload)).length
-    		    },
-    		    body:JSON.stringify(payload)
-    		});
-
-            let result = null;
-			if( response.ok ) {
-
-    	        result = await response.json();
-        		if( this.debug ) {
-        			console.info('Fetched! : '+((now()-t0)/1000).toFixed(3)+' seconds');
-        	    	console.info('='.repeat(60));
-        		}
-
-            } else {
-                let err = new Error('');
-                result = await response.text();                        
-                try {
-        	        result = JSON.parse(result);
-        	        err.message = result;
-                    err.code = result.status || result.code || result.statusCode || 500;
-                } catch(e) {
-                    try {
-                        err.message = result;
-                        err.code = result.status || result.code || result.statusCode || 500;
-                    } catch(ee) { console.error(ee); }
-                }
-                throw err;
-            }
-    		
-    		if( this.debug ) {
-                console.log('-'.repeat(50));
-                console.log('response: ', result);
-                console.log('-'.repeat(50));
-            }
-            
-            return result;
-    		
-    	} catch(e) {
-    		throw e;
-    	}
-    	
+    	});
     }
     
     async fetch( tofetch, payload ) {

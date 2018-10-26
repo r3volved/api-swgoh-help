@@ -66,20 +66,12 @@ module.exports = class SwgohHelp {
     		    body:body    		    
     		});
 			
-			let result = null;
-			if( connection.ok ) {
-
-        	    result = await connection.json();
-
-            } else {
-                result = await connection.text();
-                let err = null;
-                try {
-                  err = new Error(JSON.parse(result).error);
-                  err.code = JSON.parse(result).code;
-                } catch(e) {
-                  err = new Error(result);
-                }
+			let result = await connection.json();
+			
+			if( !connection.ok ) {
+                let err = new Error(result.error);
+        		    err.description = result.error_description;
+                    err.code = result.code;
                 throw err;
             }
                		
@@ -131,7 +123,7 @@ module.exports = class SwgohHelp {
 
                 response = this.fetch(fetchUrl, { 
         		    method: 'POST',
-			        timeout: 60000*5,
+			        timeout: 60000*2.1,
         		    headers: { 
         		    	'Authorization': 'Bearer '+this.token,
         		    	'Content-Type': 'application/json',
@@ -153,16 +145,18 @@ module.exports = class SwgohHelp {
             		}
 
                     if( result.error && result.error.length > 0 ) {
-                        let err = new Error(result.error.error);
-                		    err.description = result.error.description;
-                            err.code = result.error.code;
+                        let err = new Error(result.error);
+                		    err.description = result.error_description;
+                            err.code = result.code;
                         reject( err );
                     } 
             		
                     resolve( result );                		
         		
         		})
-        		.catch(e => reject(e));
+        		.catch(e => {
+        		    reject(e);
+                });
 	            
         	} catch(e) {
         		reject(e);
@@ -233,23 +227,6 @@ module.exports = class SwgohHelp {
     		throw e;
     	}
     }
-    
-/*
-    async fetchUnits( payload ) {
-	    try {
-            let units = await this.fetchAPI( this.roster, payload );
-		    return units.reduce((ucc,p) => {
-		        Object.keys(p).forEach(u => {
-		            ucc[u] = ucc[u] || [];
-		            ucc[u].push(p[u]);
-                });
-                return ucc;
-		    },{});
-	    } catch(e) {
-		    throw e;
-	    }
-    }
-*/
     
     async fetchUnits( payload ) {
     	try {

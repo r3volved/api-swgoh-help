@@ -131,9 +131,12 @@ module.exports = class SwgohHelp {
         		    body:JSON.stringify(payload)
         		})
         		.then(r => {
-        		    response.warning = r.headers.get('warning').split(',');
-        		    response.warning = response.warning.filter(w => w).map(w => w.trim());
-                    response.warning = response.warning.length > 0 ? response.warning : null;
+        		    response.warning = r.headers.get('warning') || null;
+        		    if( response.warning ) {
+        		        response.warning = response.warning.split(',');
+            		    response.warning = response.warning.filter(w => w).map(w => w.trim());
+                        response.warning = response.warning.length > 0 ? response.warning : null;
+                    }
         		    return r.json()
         		})
         		.then(result => {

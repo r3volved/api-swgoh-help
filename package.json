@@ -1,6 +1,6 @@
 {
   "name": "api-swgoh-help",
-  "version": "3.2.0",
+  "version": "3.3.0",
   "description": "Connection wrapper for api.swgoh.help",
   "main": "api-swgoh-help.js",
   "repository": {

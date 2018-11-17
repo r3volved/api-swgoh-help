@@ -46,79 +46,85 @@ For current structure and available payload parameters for each available endpoi
 
 /swgoh/* endpoints can be fetched via the prepared methods below, or with the generic fetch method shown here.
 
+The response from api is structured as an object with: 
+"result"  containing any results returned from request, 
+"error"   containing any errors returned from request,
+"warning" containing any warnings returned from request
+
+
 ```js
-let players = await swapi.fetch( 'player',  payload );
-let guild   = await swapi.fetch( 'guild',   payload );
-let units   = await swapi.fetch( 'units',   payload );
-let data    = await swapi.fetch( 'data',    payload );
-let zetas   = await swapi.fetch( 'zetas',   payload );
-let squads  = await swapi.fetch( 'squads',  payload );
-let events  = await swapi.fetch( 'events',  payload );
-let battles = await swapi.fetch( 'battles', payload );
+let { result, error, warning } = await swapi.fetch( 'player',  payload );
+let { result, error, warning } = await swapi.fetch( 'guild',   payload );
+let { result, error, warning } = await swapi.fetch( 'units',   payload );
+let { result, error, warning } = await swapi.fetch( 'data',    payload );
+let { result, error, warning } = await swapi.fetch( 'zetas',   payload );
+let { result, error, warning } = await swapi.fetch( 'squads',  payload );
+let { result, error, warning } = await swapi.fetch( 'events',  payload );
+let { result, error, warning } = await swapi.fetch( 'battles', payload );
 ```
 
 
 ### Player profiles ###
 
 ```js
-let player = await swapi.fetchPlayer( payload );
-console.log( player );
+let { result, error, warning } = await swapi.fetchPlayer( payload );
+console.log( result );
 ```
 
 
 ### Guild profiles ###
 
 ```js
-let guild = await swapi.fetchGuild( payload );
-console.log( guild );
+let { result, error, warning } = await swapi.fetchGuild( payload );
+console.log( result );
 ```
 
 
 ### Units index ###
 
 ```js
-let rosters = await swapi.fetchUnits( payload );
-console.log( rosters );
+let { result, error, warning } = await swapi.fetchUnits( payload );
+console.log( result );
 ```
 
 
 ### Game details / support data ###
 	
 ```js
-let data = await swapi.fetchData( payload );
-console.log( data );
+let { result, error, warning } = await swapi.fetchData( payload );
+console.log( result );
 ```
 
 
 ### Zeta recommendations ###
 	
 ```js
-let zetas = await swapi.fetchZetas();
-console.log( zetas );
+let { result, error, warning } = await swapi.fetchZetas();
+console.log( result );
 ```
 
 
 ### Squad recommendations ###
 	
 ```js
-let squads = await swapi.fetchSquads();
-console.log( squads );
+let { result, error, warning } = await swapi.fetchSquads();
+console.log( result );
 ```
 
 
 ### Current event schedule ###
 	
 ```js
-let events = await swapi.fetchEvents( payload );
-console.log( events );
+let { result, error, warning } = await swapi.fetchEvents( payload );
+console.log( result );
 ```
 
 
 ### Current campaigns and battles ###
 	
 ```js
-let battles = await swapi.fetchBattles( payload );
-console.log( battles );
+let { result, error, warning } = await swapi.fetchBattles( payload );
+console.log( result );
 ```
 
 
@@ -131,9 +137,9 @@ Optionally include flags for Crinolo's stat api
 
 ```js
 let payload  = { allycode:123456789 };
-const player = await swapi.fetchPlayer( payload );
+let { result, error, warning } = await swapi.fetchPlayer( payload );
 
-const units  = [ player.roster[10], player.roster[20] ];
+const units  = [ result.roster[10], result.roster[20] ];
 const stats  = await swapi.rosterStats( units, [ "includeMods","withModCalc","gameStyle" ] );
 ```
 	
@@ -142,9 +148,9 @@ Optionally include flags for Crinolo's stat api
 
 ```js
 let payload  = { allycodes:[ 123456789, 234567890 ] };
-const units  = await swapi.fetchUnits( payload );
+let { result, error, warning } = await swapi.fetchUnits( payload );
 
-const unit   = {"DARTHTRAYA":units["DARTHTRAYA"]};
+const unit   = {"DARTHTRAYA":result["DARTHTRAYA"]};
 const stats  = await swapi.unitStats( unit, [ "includeMods","withModCalc","gameStyle" ] );
 ```
 

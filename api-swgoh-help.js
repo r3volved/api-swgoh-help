@@ -103,8 +103,9 @@ module.exports = class SwgohHelp {
     async fetchAPI( url, payload ) {
     	return new Promise( async (resolve, reject) => {
 		    const t0 = now();
-		    let response = null;
-		    payload = payload || {};
+		    let response = { result:null, error:null, warning:null }
+		    
+		    payload = payload || {};		    
         	try {
         		
         		if( !this.token ) { await this.connect(); }
@@ -119,9 +120,7 @@ module.exports = class SwgohHelp {
         			}
             	}
 
-                let result = null;
-
-                response = this.fetch(fetchUrl, { 
+                this.fetch(fetchUrl, { 
         		    method: 'POST',
 			        timeout: 60000*2.1,
         		    headers: { 
@@ -131,7 +130,12 @@ module.exports = class SwgohHelp {
         		    },
         		    body:JSON.stringify(payload)
         		})
-        		.then(r => r.json())
+        		.then(r => {
+        		    response.warning = r.headers.get('warning').split(',');
+        		    response.warning = response.warning.filter(w => w).map(w => w.trim());
+                    response.warning = response.warning.length > 0 ? response.warning : null;
+        		    return r.json()
+        		})
         		.then(result => {
             		
                     if( this.debug ) {
@@ -144,22 +148,38 @@ module.exports = class SwgohHelp {
                         }            
             		}
 
-                    if( result.error && result.error.length > 0 ) {
+                    if( !result ) {                        
+                        let err = new Error("Not Found");
+                            err.error = "Not Found";
+                		    err.description = "No results returned";
+                            err.code = 404;
+                        result = err;
+                    } 
+
+                    if( result.error && result.error.length > 0 ) {                        
                         let err = new Error(result.error);
+                            err.error = result.error;
                 		    err.description = result.error_description;
                             err.code = result.code;
-                        reject( err );
+            		    response.error = err;
+                        result = null;
                     } 
-            		
-                    resolve( result );                		
+                    
+                    response.result = result;
+
+                    resolve( response );                		
         		
         		})
         		.catch(e => {
-        		    reject(e);
+                    e.error = e.message;
+        		    response.error = e;
+                    resolve( response );
                 });
 	            
         	} catch(e) {
-        		reject(e);
+                e.error = e.message;
+    		    response.error = e;
+                resolve( response );
         	}
     	});
     }

@@ -1,6 +1,6 @@
 {
   "name": "api-swgoh-help",
-  "version": "3.3.0",
+  "version": "3.3.1",
   "description": "Connection wrapper for api.swgoh.help",
   "main": "api-swgoh-help.js",
   "repository": {
@@ -13,6 +13,9 @@
     "galaxy of heroes"
   ],
   "author": "shittybill",
+  "contributors": [
+    "munelear"
+  ],
   "license": "MIT",
   "dependencies": {
     "node-fetch": "^2.1.2",

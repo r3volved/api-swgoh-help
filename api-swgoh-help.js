@@ -103,7 +103,7 @@ module.exports = class SwgohHelp {
     async fetchAPI( url, payload ) {
     	return new Promise( async (resolve, reject) => {
 		    const t0 = now();
-		    let response = { result:null, error:null, warning:null }
+		    let response = { result:null, error:null, warning:null, headers: null }
 		    
 		    payload = payload || {};		    
         	try {
@@ -137,6 +137,11 @@ module.exports = class SwgohHelp {
             		    response.warning = response.warning.filter(w => w).map(w => w.trim());
                         response.warning = response.warning.length > 0 ? response.warning : null;
                     }
+                    response.headers = {
+                        "X-RateLimit-Limit": r.headers.get("X-RateLimit-Limit") || null,
+                        "X-RateLimit-Remaining": r.headers.get("X-RateLimit-Remaining") || null,
+                        "X-RateLimit-Reset": r.headers.get("X-RateLimit-Reset") || null
+                    };
         		    return r.json()
         		})
         		.then(result => {

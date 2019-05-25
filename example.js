@@ -7,8 +7,7 @@ async function example() {
 		const swgoh = new SwgohHelp({
 			"username":"",
 			"password":"",
-			"debug":true,
-			"host":"apiv2.swgoh.help"
+			"debug":true
 		});
 		
 		console.log('=============');        
@@ -146,6 +145,7 @@ async function report( result ) {
         }
         console.log('[Error] : '+JSON.stringify(result.error,null,2));        
         console.log('[Warning] : '+JSON.stringify(result.warning,null,2));
+		console.log('[Headers] : '+JSON.stringify(result.headers,null,2));
         console.log('');
     } catch(e) {
         reportError(e);  

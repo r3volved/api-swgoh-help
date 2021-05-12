@@ -237,7 +237,7 @@ module.exports = class SwgohHelp {
     
     async fetchPlayer( payload ) {
     	try {
-    		return await this.fetchAPI( this.player, payload );
+    		return await this.fetchAPI( this.player, { 'allycodes': payload } );
     	} catch(e) {
     		throw e;
     	}
